@@ -1,3 +1,4 @@
+[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/ePPRhryX)
 # Hledání cesty v terénní mapě
 
 Máte zde připravený základ kódu pro práci s terénní mapou. Ta je reprezentována maticí 256x256 celých čísel představující nadmořskou výšku v metrech (soubor *terrain.dat*).
