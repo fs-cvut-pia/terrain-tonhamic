@@ -33,8 +33,11 @@ int main(int argc, char *argv[]) {
     Point start = read_coordinates(argc,argv,2);
     Point finish = read_coordinates(argc,argv,4);
 
-    std::vector<Path*> paths = { //new YourPath(m,"MyPathName",start,finish), ...
-        // Here add the list of dynamically created classes with path finding algorithms
+    std::vector<Path*> paths = { 
+        new AirplanePath(m, "airplane_path", start, finish),
+        new CarPath(m, "car_path", start, finish),
+        new ShipPath(m, "ship_path", start, finish),
+        new FerryPath(m, "ferry_path", start, finish)
     };
 
     for (auto& p : paths) {
