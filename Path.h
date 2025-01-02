@@ -21,4 +21,12 @@ private:
     std::string name;
 };
 
+class AirplanePath : public Path { public: AirplanePath(TerrainMap& m, std::string name_in, Point start_in, Point finish_in); bool find() override; };
+
+class CarPath : public Path { public: CarPath(TerrainMap& m, std::string name_in, Point start_in, Point finish_in); bool find() override;};
+
+class ShipPath : public Path { public: ShipPath(TerrainMap& m, std::string name_in, Point start_in, Point finish_in); bool find() override;};
+
+class FerryPath : public Path { public: FerryPath(TerrainMap& m, std::string name_in, Point start_in, Point finish_in); bool find() override;};
+
 #endif
