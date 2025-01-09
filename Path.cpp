@@ -80,6 +80,7 @@ bool AirplanePath::find() {
 
     const int dx[] = {-1, -1, -1,  0, 0,  1, 1, 1};
     const int dy[] = {-1,  0,  1, -1, 1, -1, 0, 1};
+    const double distances[] = {std::sqrt(2), 1, std::sqrt(2), 1, 1, std::sqrt(2), 1, std::sqrt(2)};
 
     while (!q.empty()) {
         Point current = q.front();
@@ -113,6 +114,7 @@ CarPath::CarPath(TerrainMap& m, std::string name_in, Point start_in, Point finis
     : Path(m, name_in, start_in, finish_in) {}
 
 bool CarPath::find() {
+    
     // Check if start and finish are valid
     if (this->map.alt(this->start) <= 0 || this->map.alt(this->finish) <= 0) {
         return false;
@@ -127,6 +129,7 @@ bool CarPath::find() {
 
     const int dx[] = {-1, -1, -1,  0, 0,  1, 1, 1};
     const int dy[] = {-1,  0,  1, -1, 1, -1, 0, 1};
+    const double distances[] = {std::sqrt(2), 1, std::sqrt(2), 1, 1, std::sqrt(2), 1, std::sqrt(2)};
 
     while (!q.empty()) {
         Point current = q.front();
@@ -149,7 +152,7 @@ bool CarPath::find() {
             //we need to additionally check if the point is on the land and not in water
             if (this->map.validCoords(next) && visited.find(next) == visited.end() && this->map.alt(next) > 0) {
                 double elevation_diff = std::abs(this->map.alt(next) - this->map.alt(current)); //elevation in meters
-                double distance = (next - current).length()*1000.0;  //distance in meters
+                double distance = distances[i] * 1000.0;  //distance in meters
                 //if the elevation difference is less than 6%, the point is valid for the path
                 if (elevation_diff / distance < 0.06) {
                     q.push(next);
@@ -170,17 +173,13 @@ bool ShipPath::find() {
     std::map<Point, Point> parent;
     std::set<Point> visited;
 
-    // Check if start and finish points are in water
-    if (this->map.alt(this->start) >= 0 || this->map.alt(this->finish) >= 0) {
-        std::cout << "Start or finish point is on the land." << std::endl;
-        return false;
-    }
-
+    // No need to check if start and finish points are in water anymore
     q.push(this->start);
     visited.insert(this->start);
 
     const int dx[] = {-1, -1, -1,  0, 0,  1, 1, 1};
     const int dy[] = {-1,  0,  1, -1, 1, -1, 0, 1};
+    const double distances[] = {std::sqrt(2), 1, std::sqrt(2), 1, 1, std::sqrt(2), 1, std::sqrt(2)};
 
     while (!q.empty()) {
         Point current = q.front();
@@ -200,7 +199,9 @@ bool ShipPath::find() {
         //we need to additionally check if the point is in water
         for (int i = 0; i < 8; i++) {
             Point next(current.x + dx[i], current.y + dy[i]);
-            if (this->map.validCoords(next) && visited.find(next) == visited.end() && this->map.alt(next) < 0) {
+            // Allow any valid point if it's start or finish, otherwise must be water
+            if (this->map.validCoords(next) && visited.find(next) == visited.end() && 
+                (next == this->finish || next == this->start || this->map.alt(next) < 0)) {
                 q.push(next);
                 visited.insert(next);
                 parent[next] = current;
@@ -223,6 +224,7 @@ bool FerryPath::find() {
 
     const int dx[] = {-1, -1, -1,  0, 0,  1, 1, 1};
     const int dy[] = {-1,  0,  1, -1, 1, -1, 0, 1};
+    const double base_distances[] = {std::sqrt(2), 1, std::sqrt(2), 1, 1, std::sqrt(2), 1, std::sqrt(2)};
 
     while (!q.empty()) {
         Point current = q.front();
@@ -245,16 +247,18 @@ bool FerryPath::find() {
             if (this->map.validCoords(next) && visited.find(next) == visited.end()) {
                 // Variable storing if the point is valid for the path
                 bool valid_point = false;
+                double distance = base_distances[i];
                 
-                // In water - accept all valid points
+                // In water - accept all valid points and multiply distance by 4
                 if (this->map.alt(next) < 0) {
                     valid_point = true;
+                    distance *= 4.0;
                 }
                 // On land - check elevation constraint
                 else {
                     double elevation_diff = std::abs(this->map.alt(next) - this->map.alt(current));
-                    double distance = (next - current).length() * 1000.0;  // Convert km to m
-                    if (elevation_diff / distance < 0.06) {
+                    double distance_meters = distance * 1000.0;  // Convert km to m
+                    if (elevation_diff / distance_meters < 0.06) {
                         valid_point = true;
                     }
                 }
